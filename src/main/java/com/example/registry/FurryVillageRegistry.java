@@ -85,8 +85,20 @@ public final class FurryVillageRegistry {
         villageState.removeBed(pos);
 
         if (DEBUG) {
-            System.out.println("[VillageRegistry] REGISTER BED " + pos
+            System.out.println("[VillageRegistry] UNREGISTER BED " + pos
                     + ", owner=" + villageState.getVillageOwnerOfBed(pos)
+                    + ", total beds=" + villageState.getBeds().size());
+        }
+    }
+
+    public static void unregisterBedByHeadPos(World world, BlockPos headPos) {
+        if (world.isClient) return;
+
+        FurryVillageState villageState = state(world);
+        villageState.removeBed(headPos);
+
+        if (DEBUG) {
+            System.out.println("[VillageRegistry] UNREGISTER BED BY HEAD " + headPos
                     + ", total beds=" + villageState.getBeds().size());
         }
     }

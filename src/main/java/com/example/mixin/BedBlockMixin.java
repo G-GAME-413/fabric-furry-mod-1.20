@@ -30,15 +30,12 @@ public abstract class BedBlockMixin {
             ItemStack itemStack,
             CallbackInfo ci
     ) {
+        if (world.isClient) return;
+
         BlockPos headPos = getHeadPos(pos, state);
+        BlockState headState = world.getBlockState(headPos);
 
-        if (!world.isClient) {
-            System.out.println("[BedBlockMixin] onPlaced fired at " + pos
-                    + ", state=" + state
-                    + ", registering head=" + headPos);
-        }
-
-        FurryVillageRegistry.registerBed(world, headPos, world.getBlockState(headPos));
+        FurryVillageRegistry.registerBed(world, headPos, headState);
     }
 
     @Inject(
@@ -52,13 +49,13 @@ public abstract class BedBlockMixin {
             PlayerEntity player,
             CallbackInfoReturnable<BlockState> cir
     ) {
-        if (state.get(BedBlock.PART) != BedPart.HEAD) return;
+        if (world.isClient) return;
 
-        if (!world.isClient) {
-            System.out.println("[BedBlockMixin] onBreak unregister head=" + pos + ", state=" + state);
-        }
+        BlockPos headPos = getHeadPos(pos, state);
 
-        FurryVillageRegistry.unregisterBed(world, pos, state);
+        // важно: удаляем по вычисленной позиции HEAD,
+        // даже если ломают FOOT
+        FurryVillageRegistry.unregisterBedByHeadPos(world, headPos);
     }
 
     @Inject(method = "getStateForNeighborUpdate", at = @At("RETURN"))
@@ -73,14 +70,11 @@ public abstract class BedBlockMixin {
     ) {
         BlockState newState = cir.getReturnValue();
 
-        if (newState.isAir() && world instanceof World realWorld) {
+        if (!(world instanceof World realWorld) || realWorld.isClient) return;
+
+        if (newState.isAir()) {
             BlockPos headPos = getHeadPos(pos, state);
-
-            if (!realWorld.isClient) {
-                System.out.println("[BedBlockMixin] neighbor update removed bed, unregister head=" + headPos);
-            }
-
-            FurryVillageRegistry.unregisterBed(realWorld, headPos, realWorld.getBlockState(headPos));
+            FurryVillageRegistry.unregisterBedByHeadPos(realWorld, headPos);
         }
     }
 
@@ -89,11 +83,8 @@ public abstract class BedBlockMixin {
             return pos;
         }
 
-        if (state.get(BedBlock.PART) == BedPart.HEAD) {
-            return pos;
-        }
-
-        Direction facing = state.get(BedBlock.FACING);
-        return pos.offset(facing);
+        return state.get(BedBlock.PART) == BedPart.HEAD
+                ? pos
+                : pos.offset(state.get(BedBlock.FACING));
     }
 }
