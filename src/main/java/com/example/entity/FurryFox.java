@@ -1,5 +1,6 @@
 package com.example.entity;
 
+import com.example.entity.ai.pathing.FurryFoxNavigation;
 import com.example.entity.goal.ComposterWorkGoal;
 import com.example.entity.goal.FarmerWorkGoal;
 import com.example.entity.goal.ReturnToVillageCenterGoal;
@@ -11,6 +12,8 @@ import net.minecraft.block.Blocks;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.ai.goal.*;
+import net.minecraft.entity.ai.pathing.EntityNavigation;
+import net.minecraft.entity.ai.pathing.PathNodeType;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.data.DataTracker;
@@ -49,6 +52,16 @@ public class FurryFox extends PathAwareEntity implements GeoEntity, Merchant {
 
     public FurryFox(EntityType<? extends PathAwareEntity> entityType, World world) {
         super(entityType, world);
+
+        // Мягкое избегание служебных блоков
+        this.setPathfindingPenalty(PathNodeType.DANGER_OTHER, 50.0F);
+    }
+
+
+    // Navigation
+    @Override
+    protected EntityNavigation createNavigation(World world) {
+        return new FurryFoxNavigation(this, world);
     }
 
 

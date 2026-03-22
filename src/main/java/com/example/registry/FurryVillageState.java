@@ -404,7 +404,7 @@ public class FurryVillageState extends PersistentState {
     }
 
 
-    // Фкрмкрство
+    // Фермерство
     private final LinkedHashMap<BlockPos, ComposterEntry> composters = new LinkedHashMap<>();
 
     public static class ComposterEntry {
